@@ -76,10 +76,120 @@ body {
 .tile {
   display: inline-block;
   width: 45px;
-  height: 33px;
+  height: 32px;
   background: url('tileset.png') no-repeat;
 }
 
-.tile.tile-grey1 {
-  background-position: -315px -33px;
+.tile.tile-empty {
+  background-position: -0px -0px;
 }
+
+.tile.tile-grey1 {
+  background-position: -45px 0px;
+}
+.tile.tile-grey2 {
+  background-position: -90px 0px;
+}
+.tile.tile-grey3 {
+  background-position: -135px 0px;
+}
+
+.tile.tile-green1 {
+  background-position: -180px 0px;
+}
+.tile.tile-green2 {
+  background-position: -225px 0px;
+}
+.tile.tile-green3 {
+  background-position: -270px 0px;
+}
+
+.tile.tile-brown1 {
+  background-position: -315px 0px;
+}
+.tile.tile-brown2 {
+  background-position: -360px 0px;
+}
+.tile.tile-brown3 {
+  background-position: -405px 0px;
+}
+.tile.tile-brown4 {
+  background-position: -450px 0px;
+}
+.tile.tile-blue1 {
+  background-position: -495px 0px;
+}
+.tile.tile-blue2 {
+  background-position: -0px -32px;
+}
+.tile.tile-blue3 {
+  background-position: -45px -32px;
+}
+.tile.tile-blue4 {
+  background-position: -90px -32px;
+}
+
+.tile.tile-red {
+  background-position: -135px -32px;
+}
+.tile.tile-dark-blue {
+  background-position: -180px -32px;
+}
+.tile.tile-light-blue {
+  background-position: -225px -32px;
+}
+.tile.tile-back1 {
+  background-position: -270px -33px;
+}
+.tile.tile-back2 {
+  background-position: -315px -32px;
+}
+.tile.tile-down {
+  background-position: -360px -32px;
+}
+.tile.tile-up {
+  background-position: -405px -32px;
+}
+.tile.tile-left {
+  background-position: -450px -32px;
+}
+.tile.tile-right {
+  background-position: -495px -32px;
+}
+.tile.tile-leftDown {
+  background-position: -0px -64px;
+}
+.tile.tile-leftUp {
+  background-position: -45px -64px;
+}
+.tile.tile-rightUp {
+  background-position: -90px -64px;
+}
+.tile.tile-rightDown {
+  background-position: -135px -64px;
+}
+
+.tile.tile-topLeft {
+  background-position: -180px -64px;
+}
+.tile.tile-topRight{
+  background-position: -225px -64px;
+}
+.tile.tile-bottomRight {
+  background-position: -270px -64px;
+}
+.tile.tile-bottomLeft {
+  background-position: -315px -64px;
+}
+.tile.tile-goal {
+  background-position: -360px -64px;
+}
+.tile.tile-goal {
+  background-position: -360px -64px;
+}
+.selected {
+  border-color:  red;
+  border-style: dashed;
+  border-width:  2px;
+}
+

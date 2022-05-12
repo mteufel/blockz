@@ -1,18 +1,24 @@
 <template>
-    <div class="tile tile-grey1"></div>
+  <div :class="css"> </div>
 </template>
 
 <script>
 export default {
-  name: "MapTile"
+  name: "MapTile",
+  props: ['tile', 'selected'],
+  computed: {
+      css() {
+        if (this.selected) {
+          return "tile tile-" + this.tile + " selected"
+        } else {
+          return "tile tile-" + this.tile
+        }
+
+      }
+  }
 }
 </script>
 
 <style scoped>
 @import '../assets/base.css';
-    .mapTile {
-      width: 45px;
-      height: 33px;
-      background: aqua;
-    }
 </style>
