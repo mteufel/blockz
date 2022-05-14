@@ -1,4 +1,4 @@
 import { createApp } from 'vue'
 import App from './LevelDesignerApp.vue'
-
-createApp(App).mount('#app')
+const app = createApp(App)
+app.mount('#app')
