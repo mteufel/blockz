@@ -89,7 +89,7 @@ body {
 
 .tile {
   display: inline-block;
-  width: 45px;
+  width: 48px;
   height: 32px;
   background: url('tileset.png') no-repeat;
 }
@@ -99,108 +99,171 @@ body {
 }
 
 .tile.tile-grey1 {
-  background-position: -45px 0px;
+  background-position: -48px 0px;
 }
 .tile.tile-grey2 {
-  background-position: -90px 0px;
+  background-position: -96px 0px;
 }
 .tile.tile-grey3 {
-  background-position: -135px 0px;
+  background-position: -144px 0px;
 }
-
+.tile.tile-grey4 {
+  background-position: -192px 0px;
+}
 .tile.tile-green1 {
-  background-position: -180px 0px;
+  background-position: -240px 0px;
 }
 .tile.tile-green2 {
-  background-position: -225px 0px;
+  background-position: -288px 0px;
 }
 .tile.tile-green3 {
-  background-position: -270px 0px;
+  background-position: -336px 0px;
+}
+.tile.tile-green4 {
+  background-position: -384px 0px;
+}
+.tile.tile-blue1 {
+  background-position: -0px -32px;
+}
+.tile.tile-blue2 {
+  background-position: -48px -32px;
+}
+.tile.tile-blue3 {
+  background-position: -96px -32px;
+}
+.tile.tile-blue4 {
+  background-position: -144px -32px;
+}
+.tile.tile-blue5 {
+  background-position: -192px -32px;
+}
+.tile.tile-red1 {
+  background-position: -240px -32px;
+}
+.tile.tile-red2 {
+  background-position: -288px -32px;
+}
+.tile.tile-red3 {
+  background-position: -336px -32px;
+}
+.tile.tile-red4 {
+  background-position: -384px -32px;
+}
+
+.tile.tile-light-blue1 {
+  background-position: -0px -64px;
+}
+.tile.tile-light-blue2 {
+  background-position: -48px -64px;
+}
+.tile.tile-light-blue3 {
+  background-position: -96px -64px;
+}
+.tile.tile-light-blue4 {
+
+  background-position: -192px -32px;
+}
+
+.tile.tile-fade1 {
+  background-position: -240px -64px;
+}
+.tile.tile-fade2 {
+  background-position: -288px -64px;
+}
+.tile.tile-fade3 {
+  background-position: -336px -64px;
+}
+.tile.tile-fade4 {
+  background-position: -384px -64px;
+}
+.tile.tile-fade5 {
+  background-position: -432px -64px;
+}
+.tile.tile-fade6 {
+  background-position: -480px -64px;
 }
 
 .tile.tile-brown1 {
-  background-position: -315px 0px;
+  background-position: -0px -96px;
 }
 .tile.tile-brown2 {
-  background-position: -360px 0px;
+  background-position: -48px -96px;
 }
 .tile.tile-brown3 {
-  background-position: -405px 0px;
+  background-position: -96px -96px;
 }
 .tile.tile-brown4 {
-  background-position: -450px 0px;
+  background-position: -144px -96px;
 }
-.tile.tile-blue1 {
-  background-position: -495px 0px;
-}
-.tile.tile-blue2 {
-  background-position: -0px -32px;
-}
-.tile.tile-blue3 {
-  background-position: -45px -32px;
-}
-.tile.tile-blue4 {
-  background-position: -90px -32px;
+.tile.tile-brown5 {
+  background-position: -192px -96px;
 }
 
-.tile.tile-red {
-  background-position: -135px -32px;
-}
-.tile.tile-dark-blue {
-  background-position: -180px -32px;
-}
-.tile.tile-light-blue {
-  background-position: -225px -32px;
-}
-.tile.tile-back1 {
-  background-position: -270px -33px;
-}
-.tile.tile-back2 {
-  background-position: -315px -32px;
-}
 .tile.tile-down {
-  background-position: -360px -32px;
+  background-position: -0px -128px;
 }
 .tile.tile-up {
-  background-position: -405px -32px;
+  background-position: -48px -128px;
 }
 .tile.tile-left {
-  background-position: -450px -32px;
+  background-position: -96px -128px;
 }
 .tile.tile-right {
-  background-position: -495px -32px;
+  background-position: -144px -128px;
 }
+
 .tile.tile-leftDown {
-  background-position: -0px -64px;
+  background-position: -0px -160px;
 }
 .tile.tile-leftUp {
-  background-position: -45px -64px;
+  background-position: -48px -160px;
 }
 .tile.tile-rightUp {
-  background-position: -90px -64px;
+  background-position: -96px -160px;
 }
 .tile.tile-rightDown {
-  background-position: -135px -64px;
+  background-position: -144px -160px;
 }
 
 .tile.tile-topLeft {
-  background-position: -180px -64px;
+  background-position: -188px -160px;
 }
 .tile.tile-topRight{
-  background-position: -225px -64px;
+  background-position: -192px -160px;
 }
 .tile.tile-bottomRight {
-  background-position: -270px -64px;
+  background-position: -240px -160px;
 }
 .tile.tile-bottomLeft {
-  background-position: -315px -64px;
+  background-position: -288px -160px;
 }
 .tile.tile-goal {
-  background-position: -360px -64px;
+  background-position: -0px -192px;
 }
-.tile.tile-goal {
-  background-position: -360px -64px;
+
+.tile.tile-back1 {
+  background-position: -0px -224px;
 }
+.tile.tile-back2 {
+  background-position: -48px -224px;
+}
+.tile.tile-back-solo {
+  background-position: -96px -224px;
+}
+
+.tile.tile-bordered1 {
+  background-position: -192px -224px;
+}
+.tile.tile-bordered2 {
+  background-position: -240px -224px;
+}
+.tile.tile-bordered3 {
+  background-position: -288px -224px;
+}
+.tile.tile-bordered4 {
+  background-position: -336px -224px;
+}
+
 .selected {
   border-color:  red;
   border-style: dashed;

@@ -4,16 +4,20 @@
     
     $3000 CODE
 
-    $5000 SPEED CODE (600 Bytes per Map)
+    $4000-$5000 Free
 
-    $6000 Graphics
-
+    $5000 Graphics Data
+        $5000-613C Tiles
+    
     $7000 Levels
 
     // Graphics Area
     // $8000-$BFFF VIC Bank 2 from 
     //  $9000       SCREEN RAM
     //  $A000-$BFFF Bitmap data
+
+    $C000 - $CFFF Free
+    $E000 - $FFFF Free
 
 
 */
@@ -165,7 +169,7 @@ TABLES: {
 #import "game.asm" 
 #import "level.asm" 
 
-* = $6000 "Graphics"
+* = $5000 "Graphics"
 #import "graphics.asm"
 
 * = $7000 "Level Data"
