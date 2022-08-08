@@ -8,6 +8,7 @@ let tools = createTools()
 let levelSet = createLevelSet()
 let currentLevelNumber = ref(1)
 let currentLevel = ref({})
+let assemblyData = ref("")
 
 currentLevel.value = levelSet.value[currentLevelNumber.value]
 console.log('currentLevel', toRaw(currentLevel.value))
@@ -71,16 +72,81 @@ function downloadLevelData() {
 }
 function uploadLevelData(ev) {
   console.log(ev.target.files)
-  let fileToRead = ev.target.files[0];
-  console.log(fileToRead)
-  let reader = new FileReader();
-  reader.onload = function(e) {
-    let content = e.target.result;
-    console.log(content);
-    let intern = JSON.parse(content);
-    console.log(intern);
+  if (ev.target.files.length == 1) {
+    let fileToRead = ev.target.files[0];
+    console.log(fileToRead)
+    let reader = new FileReader();
+    reader.onload = function(e) {
+      let content = e.target.result;
+      console.log(content);
+      let intern = JSON.parse(content);
+      console.log(intern);
+      levelSet.value = intern
     };
-   reader.readAsText(fileToRead);
+    reader.readAsText(fileToRead);
+  }
+}
+
+function toAssembly() {
+  let pre = []
+  let post = []
+  let lp = []
+  let lp_idx = 1
+  let ld = []
+  let ld_idx = 1
+  let ldd_idx = 0
+
+
+
+  let level = levelSet.value[0]
+
+  pre[0] = "LEVELS: {"
+  pre[1] = "    .align $100"
+  pre[2] = "    LevelPointerData:"
+
+
+
+
+  levelSet.value.forEach( lev => {
+    lp[lp_idx] = "      .word level_" + lev.levelNumber
+    ld[ld_idx] = "    level_" + lev.levelNumber + ":"
+    let ldd_idx = 0
+    for (let i = 0; i < 10 ; i++) {
+      ld_idx++
+      ld[ld_idx] = "      .byte " + lev.data[ldd_idx].map(v => findById(v).index).map( v => '$' + v.toString(16).padStart(2,'0'))
+      ldd_idx ++
+    }
+    ld_idx++
+    ld[ld_idx] = "      .byte " + level.levelNumber +  "         //level number"
+    ld_idx++
+    ld[ld_idx] = "      .byte 4          //tries"
+    ld_idx++
+    ld[ld_idx] = "      .byte 60         //time in seconds"
+    ld_idx++
+    ld[ld_idx] = "      .byte 1,2        //in- and out sequence"
+    ld_idx++
+    lp_idx++
+
+
+  })
+/*
+  ld[ld_idx] = "    level_" + level.levelNumber + ":"
+  for (let i = 0; i < 10 ; i++) {
+    ld_idx++
+    ld[ld_idx] = "      .byte " + level.data[ldd_idx].map( v => '$' + v.toString(16).padStart(2,'0'))
+    ldd_idx ++
+  }
+*/
+
+
+  post[0]= "\r\n}"
+
+  let assembly = pre.join('\r\n') +  lp.join('\r\n') +  ld.join('\r\n') + post[0]
+
+  assemblyData.value = assembly
+
+  //levelSet.value.forEach( l => console.log(l))
+
 }
 
 
@@ -109,10 +175,12 @@ function uploadLevelData(ev) {
   <button @click="clearMap">Clear</button>
   <button @click="levelUp"> + </button>
   <button @click="levelDown"> - </button>
-  <button>Assembly</button>
+  <button @click="toAssembly">Assembly</button>
   <button @click="downloadLevelData">Download</button>
   <input type="button" id="upload" value="Upoad" onclick="document.getElementById('file').click();"/>
-  <input type="file" style="display:none;" id="file" name="file" @click="uploadLevelData"/>
+  <input type="file" style="display:none;" id="file" name="file" @change="uploadLevelData"/>
+  <br><br>
+  <textarea type="textarea" rows="10" cols="75">{{ assemblyData }}</textarea>
 
 
 </template>

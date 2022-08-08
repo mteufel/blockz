@@ -29,10 +29,17 @@
 #import "zp.asm" 
 
 BasicUpstart2(Entry)
+//BasicUpstart2(SimpleEntry)
 
 SimpleEntry: {
-        jmp INTRO.Start 
+        // this is only for debugging purposes to check calculations etc...
+        lda #$67
+        jsr LEVEL.CalculateStonePos
+        tax
+
+        jmp *     
 }
+
 
 Entry: {
         sei
@@ -114,6 +121,23 @@ Add: {
 
 }
 
+Multiply: {
+
+        // ZP.Num1 and ZP.Num2 values to be multplied
+        // result in ACC
+
+                lda #$00
+                beq entry
+        doAdd:  clc
+                adc ZP.Num1
+        loop:   asl ZP.Num1
+        entry:  lsr ZP.Num2
+                bcs doAdd
+                bne loop
+                rts
+   
+}
+
 
 TABLES: {
         TileToScreenLSB:
@@ -173,4 +197,4 @@ TABLES: {
 #import "graphics.asm"
 
 * = $7000 "Level Data"
-#import "levels.asm"
+#import "levels2.asm"

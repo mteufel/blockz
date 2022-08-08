@@ -2,9 +2,13 @@ LEVEL: {
 
 
     Data: {
-        Initial: .fill 120, $0d
-        Display: .fill 120, $01
-        Current: .fill 120, $00
+        Initial:           .fill 120, $0d
+        InitialBlocksPos:  .fill 120, $ff
+        InitialBlocksTile: .fill 120, $ff
+
+
+        Display:            .fill 120, $01
+        Current:            .fill 120, $00
     }
 
     LoadLevel: {
@@ -40,8 +44,44 @@ LEVEL: {
                 cpy #$78
                 bne !loop-
 
-                jsr CopyInitialMap
+                // initialize the level by loading it to Data.Initial
+                ldy #$00
+        !loop:  lda (ZP.LevelDataVector), y
+                sta Data.Initial,y
+                iny
+                cpy #$78
+                bne !loop-
 
+
+                lda ZP.LevelDataVector
+                sta ZP.Num1Lo
+                lda ZP.LevelDataVector + 1
+                sta ZP.Num1Hi
+                lda #$7e
+                sta ZP.Num2Lo
+                lda #$00
+                sta ZP.Num2Hi
+                jsr Add
+
+                lda ZP.ResultLo
+                sta ZP.LevelDataVector
+                lda ZP.ResultHi
+                sta ZP.LevelDataVector + 1
+
+                ldy #$00
+        !loop:  lda (ZP.LevelDataVector), y
+                sta Data.InitialBlocksPos,y
+                iny
+                lda (ZP.LevelDataVector), y
+                sta Data.InitialBlocksTile,y
+                iny
+                lda (ZP.LevelDataVector), y
+                iny
+                cmp #$ff
+                bne !loop-
+
+
+                jsr CopyInitialMap
 
                 rts
     }  
@@ -57,6 +97,16 @@ LEVEL: {
                 bpl !-
                 rts
 
+    }
+
+    CopyInitialBlocksData: {
+                ldx #$7e
+        !:      lda Data.Initial,x
+                sta Data.Display,x
+                sta Data.Current,x
+                dex
+                bpl !-
+                rts           
     }
 
 
@@ -76,6 +126,14 @@ LEVEL: {
                 inx
                 cpx #$78
                 bne !-
+
+
+                // Nur zum Test
+                lda #$67
+                jsr LEVEL.CalculateStonePos
+                tax
+                lda #$30
+                jsr DrawTile
                 rts
 
 
@@ -207,5 +265,57 @@ LEVEL: {
                 rts
     }
 
+
+
+    CalculateStonePos: {
+
+                // IN: position $YX in ACC
+                // OUT: position in level map in ACC
+
+                // row (y) in Y
+                // col (x) in X
+                // result is in ACC
+                // calculates : (Y*$0b+Y)+X
+                sta ZP.Num3   // remember initial ACC value for splitting
+                
+                and #%11110000
+                
+                ror
+                ror
+                ror
+                ror
+                
+                jmp *
+                tay
+                
+                lda ZP.Num3
+                and #%00001111
+                tax
+
+                
+
+                // Y * $0b ($0b=length of one row in the game)
+                sty ZP.Num1
+                lda #$0b
+                sta ZP.Num2
+                jsr Multiply
+                
+
+                sta ZP.Num3  // save the result of the multiply before
+                tya
+                sta ZP.Num1 
+                lda ZP.Num3
+                clc
+                adc ZP.Num1 
+
+
+                sta ZP.Num3  // save the result of the addition before
+                txa
+                sta ZP.Num1 
+                lda ZP.Num3
+                clc
+                adc ZP.Num1   
+                rts              
+    }
 
 }

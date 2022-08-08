@@ -229,13 +229,13 @@ body {
   background-position: -188px -160px;
 }
 .tile.tile-topRight{
-  background-position: -192px -160px;
-}
-.tile.tile-bottomRight {
   background-position: -240px -160px;
 }
-.tile.tile-bottomLeft {
+.tile.tile-bottomRight {
   background-position: -288px -160px;
+}
+.tile.tile-bottomLeft {
+  background-position: -336px -160px;
 }
 .tile.tile-goal {
   background-position: -0px -192px;
@@ -268,5 +268,10 @@ body {
   border-color:  red;
   border-style: dashed;
   border-width:  2px;
+}
+
+textarea {
+  background: var(--color-background);
+  color: darkgray;
 }
 
