@@ -53,33 +53,20 @@ LEVEL: {
                 bne !loop-
 
 
-                lda ZP.LevelDataVector
-                sta ZP.Num1Lo
-                lda ZP.LevelDataVector + 1
-                sta ZP.Num1Hi
-                lda #$7e
-                sta ZP.Num2Lo
-                lda #$00
-                sta ZP.Num2Hi
-                jsr Add
-
-                lda ZP.ResultLo
-                sta ZP.LevelDataVector
-                lda ZP.ResultHi
-                sta ZP.LevelDataVector + 1
-
-                ldy #$00
+                // this loop reads the initial stone layout from the level
+                ldy #$7d
+                ldx #$00
         !loop:  lda (ZP.LevelDataVector), y
-                sta Data.InitialBlocksPos,y
-                iny
-                lda (ZP.LevelDataVector), y
-                sta Data.InitialBlocksTile,y
-                iny
-                lda (ZP.LevelDataVector), y
-                iny
                 cmp #$ff
-                bne !loop-
-
+                beq !end+
+                sta Data.InitialBlocksPos,x
+                iny
+                lda (ZP.LevelDataVector), y
+                sta Data.InitialBlocksTile,x
+                iny
+                inx
+                jmp !loop-
+        !end:
 
                 jsr CopyInitialMap
 
@@ -128,12 +115,21 @@ LEVEL: {
                 bne !-
 
 
-                // Nur zum Test
-                lda #$67
-                jsr LEVEL.CalculateStonePos
+                // paint the initial stones
+                //lda #$67
+                //jsr LEVEL.CalculateStonePos
+        debug:  ldy #$00
+        !:      lda Data.InitialBlocksPos,y 
+                cmp #$ff
+                beq !end+ 
                 tax
-                lda #$30
+                lda Data.InitialBlocksTile,y
+                sty ZP.Temp
                 jsr DrawTile
+                ldy ZP.Temp 
+                iny
+                jmp !-
+        !end:
                 rts
 
 
@@ -263,59 +259,6 @@ LEVEL: {
                 cpx #$02
                 bne !loop-
                 rts
-    }
-
-
-
-    CalculateStonePos: {
-
-                // IN: position $YX in ACC
-                // OUT: position in level map in ACC
-
-                // row (y) in Y
-                // col (x) in X
-                // result is in ACC
-                // calculates : (Y*$0b+Y)+X
-                sta ZP.Num3   // remember initial ACC value for splitting
-                
-                and #%11110000
-                
-                ror
-                ror
-                ror
-                ror
-                
-                jmp *
-                tay
-                
-                lda ZP.Num3
-                and #%00001111
-                tax
-
-                
-
-                // Y * $0b ($0b=length of one row in the game)
-                sty ZP.Num1
-                lda #$0b
-                sta ZP.Num2
-                jsr Multiply
-                
-
-                sta ZP.Num3  // save the result of the multiply before
-                tya
-                sta ZP.Num1 
-                lda ZP.Num3
-                clc
-                adc ZP.Num1 
-
-
-                sta ZP.Num3  // save the result of the addition before
-                txa
-                sta ZP.Num1 
-                lda ZP.Num3
-                clc
-                adc ZP.Num1   
-                rts              
     }
 
 }

@@ -1,5 +1,6 @@
 * = $02 "Blockz Zeropage data" virtual 
 ZP: {
+    Temp:              .byte $00       // temporary storage as helper
     LevelDataVector:   .word $000
     LevelTemp:         .byte $00
         

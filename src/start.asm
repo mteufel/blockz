@@ -33,10 +33,7 @@ BasicUpstart2(Entry)
 
 SimpleEntry: {
         // this is only for debugging purposes to check calculations etc...
-        lda #$67
-        jsr LEVEL.CalculateStonePos
-        tax
-
+        
         jmp *     
 }
 

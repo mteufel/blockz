@@ -95,7 +95,7 @@ LEVELS: {
       .byte 4          //tries
       .byte 60         //time in seconds
       .byte 1,2        //in- and out sequence
-      .byte $11,$30,$22,$30,$ff // initial blocks
+      .byte $11,$30,$22,$31,$63,$30,$25,$47,$26,$47,$27,$47,$ff  // initial blocks
     level_2:
       .byte $12,$12,$11,$07,$11,$10,$11,$0f,$10,$0f,$0e,$17
       .byte $12,$10,$27,$27,$26,$26,$26,$27,$27,$25,$0f,$0f
@@ -127,7 +127,7 @@ LEVELS: {
       .byte 4          //tries
       .byte 60         //time in seconds
       .byte 1,2        //in- and out sequence
-      .byte $11,$30,$22,$30,$ff // initial blocks
+      .byte $58,$30,$5b,$31,$ff // initial blocks
     level_4:
       .byte $08,$07,$06,$06,$01,$06,$05,$01,$00,$05,$05,$06
       .byte $07,$26,$26,$25,$02,$00,$00,$02,$27,$25,$00,$05
