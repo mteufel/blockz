@@ -1,7 +1,7 @@
 GAME: {
 
     Settings: {
-        currentLevel: .byte $00
+        currentLevel: .byte $01
     }
 
     Start: {
