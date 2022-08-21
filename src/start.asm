@@ -184,6 +184,7 @@ TABLES: {
 
 
 #import "macros/bitmap.asm"
+#import "macros/utils.asm"
 
 * = $3000 "Blockz Code"
 #import "intro.asm" 

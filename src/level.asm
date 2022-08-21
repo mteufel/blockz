@@ -99,6 +99,8 @@ LEVEL: {
 
     DrawLevel: {
 
+                lda #$01
+                sta ZP.TileStoreBitmap
 
                 ldx #$00
         !:      
@@ -141,15 +143,20 @@ LEVEL: {
                 // Tile-Element Number in accumulator
                 // Position in X
 
-
-                // Store Bitmap
                 stx ZP.TileDrawTemp
                 jsr GRAPHICS.CopyTile
+
+                ldy ZP.TileStoreBitmap
+                cpy #$01
+                bne next
+
+
+                // Store Bitmap
                 ldx ZP.TileDrawTemp
                 jsr StoreBitmap
 
                 // Store Screen RAM
-                ldx ZP.TileDrawTemp
+        next:   ldx ZP.TileDrawTemp
                 lda TABLES.TileToScreenRamLSB,x
                 sta ZP.TileDrawVector + 0
                 lda TABLES.TileToScreenRamMSB,x
@@ -168,6 +175,17 @@ LEVEL: {
 
                 rts
     }  
+
+    RecolorTile: {
+
+                // Tile-Element Number in accumulator
+                // Position in X
+                ldy #$00
+                sty ZP.TileStoreBitmap
+                stx ZP.TileDrawTemp
+                jsr DrawTile
+                rts
+    }
 
 
     StoreBitmap: {
@@ -217,6 +235,8 @@ LEVEL: {
     }
 
     Store: {
+
+                // x start in Data Structure (+x)
 
                 stx ZP.TileDrawTemp2
                 ldx #$00

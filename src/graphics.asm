@@ -42,6 +42,7 @@ GRAPHICS: {
                        .byte <Empty,<Empty,<Empty,<Empty
                        .byte <Empty,<Empty,<Empty,<Empty
                        .byte <Goal
+                       .byte <ColorFade0,<ColorFade1,<ColorFade2,<ColorFade3
 
     TileElementsMSB:   .byte >Empty,>Grey1,>Grey2,>Grey3,>Grey4,>Green1,>Green2,>Green3,>Green4
                        .byte >Brown1,>Brown2,>Brown3,>Brown4,>Brown5
@@ -62,6 +63,7 @@ GRAPHICS: {
                        .byte >Empty,>Empty,>Empty,>Empty
                        .byte >Empty,>Empty,>Empty,>Empty
                        .byte >Goal
+                       .byte >ColorFade0,>ColorFade1,>ColorFade2,>ColorFade3
 
     Empty:           .fill $3c, 0   // empty space
 
@@ -968,6 +970,19 @@ GRAPHICS: {
                     .byte
                     .byte
 */
+
+    ColorFade0:     .fill $30,0
+                    .byte 113,124,188,124,188,188
+                    .byte 15,15,15,15,15,15
+    ColorFade1:     .fill $30,0
+                    .byte 17,31,207,31,207,207
+                    .byte 7,7,7,7,7,15
+    ColorFade2:     .fill $30,0
+                    .byte 17,23,247,23,247,247
+                    .byte 1,1,1,1,1,1
+    ColorFade3:     .fill $30,0
+                    .byte 17,17,113,17,113,113
+                    .byte 1,1,1,1,1,1
 
     TileData:       .fill $3c, 0   // initially, the tile area is empty ...
 
