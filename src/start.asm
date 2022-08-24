@@ -1,20 +1,21 @@
 /* 
     $0800 Init code and util routines
-    $1000 Place for music
+    $1000 FREE (Place for music)
     
     $3000 CODE
 
     $4000-$5000 Free
 
-    $5000 Graphics Data
+    $5000-$6FFF Graphics Data
         $5000-613C Tiles
     
     $7000 Levels
 
     // Graphics Area
     // $8000-$BFFF VIC Bank 2 from 
-    //  $9000       SCREEN RAM
-    //  $A000-$BFFF Bitmap data
+
+      //  $8000       SCREEN RAM
+      //  $A000-$BFFF Bitmap data
 
     $C000 - $CFFF Free
     $E000 - $FFFF Free
@@ -193,6 +194,7 @@ TABLES: {
 
 * = $5000 "Graphics"
 #import "graphics.asm"
+#import "sprites.asm"
 
 * = $7000 "Level Data"
 #import "levels3.asm"

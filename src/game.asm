@@ -59,6 +59,8 @@ GAME: {
                 // Tile-Element Number in accumulator
                 // Position in X
 
+                    jsr SPRITES.Initialize
+
     loop:           ldx #$0d
                     lda #$51
                     jsr LEVEL.RecolorTile
