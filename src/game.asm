@@ -60,6 +60,9 @@ GAME: {
                 // Position in X
 
                     jsr SPRITES.Initialize
+    x:              jsr INPUT.ReadJoystick
+                    jsr INPUT.Reaction
+                    jmp x
 
     loop:           ldx #$0d
                     lda #$51

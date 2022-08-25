@@ -1,30 +1,40 @@
 /* 
-    $0800 Init code and util routines
-    $1000 FREE (Place for music)
+
+    ========================================================
+
+    BLOCKZ
+    by seytan/reflex 2022
+
+    ========================================================
     
-    $3000 CODE
-
-    $4000-$5000 Free
-
-    $5000-$6FFF Graphics Data
-        $5000-613C Tiles
+    Memorylayout per 24.08.2022:
     
-    $7000 Levels
+    $0000            Zeropage, Variables etc
+    $0800-$0FFF      Init Code, Utils, Tables
 
-    // Graphics Area
-    // $8000-$BFFF VIC Bank 2 from 
+    $1000-$2000      Reserved for Music
 
-      //  $8000       SCREEN RAM
-      //  $A000-$BFFF Bitmap data
+    $2000-$4000      Blockz Game Code
 
-    $C000 - $CFFF Free
-    $E000 - $FFFF Free
+    $4000-$7FFF      VIC Bank 1
+       $4000-$4FFF        Screen RAM
+       $5000-$5FFF        Sprite Data
+       $6000-$7FFF        Bitmap Data
 
+    $8000-$A0FF      Levels
+
+    $A100- max $CFFF Graphic Data
+
+    $D000-$DFFF      VIC Control registers, dont touch
+
+    $E000-$EFFF      Free
+
+    $F000-$FFFF      Kernal, maybe I need it for irqs, so dont touch (at the moment)
 
 */
 
-.label BITMAP       = $a000
-.label SCREEN_RAM   = $8000
+.label BITMAP       = $6000
+.label SCREEN_RAM   = $4000
 .label COLOR_RAM    = $d800
 
 #import "zp.asm" 
@@ -48,13 +58,14 @@ Entry: {
         sta $dd0d
 
         //  RAM between $A000-$BFFF, $E000-$FFFF available, I/O area visible at $D000-DFFF
+        //  this means, kernal functions e.g. for irq handling not available at the moment
         lda #$35
         sta $01
 
         blackScreen()
         activateBitmapMode()
         activateMulticolorMode()
-        switchVicBank2()
+        switchVicBank1()
         setStartOfBitmapAndScreenRam()
         
         cli
@@ -187,14 +198,16 @@ TABLES: {
 #import "macros/bitmap.asm"
 #import "macros/utils.asm"
 
-* = $3000 "Blockz Code"
+* = $2000 "Blockz Code"
 #import "intro.asm" 
 #import "game.asm" 
 #import "level.asm" 
-
-* = $5000 "Graphics"
-#import "graphics.asm"
+#import "input.asm"
 #import "sprites.asm"
 
-* = $7000 "Level Data"
+* = $A100 "Graphics"
+#import "graphics.asm"
+
+
+* = $8000 "Level Data"
 #import "levels3.asm"
