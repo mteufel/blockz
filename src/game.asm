@@ -59,7 +59,7 @@ GAME: {
                 // Tile-Element Number in accumulator
                 // Position in X
 
-                    jsr SPRITES.Initialize
+                    jsr POINTER.InitializePointer
     x:              jsr INPUT.ReadJoystick
                     jsr INPUT.Reaction
                     jmp x

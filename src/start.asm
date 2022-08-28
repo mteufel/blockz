@@ -44,7 +44,11 @@ BasicUpstart2(Entry)
 
 SimpleEntry: {
         // this is only for debugging purposes to check calculations etc...
-        
+        lda #$80
+        sta ZP.Num1
+        lda #$11
+        sta ZP.Num2
+        jsr Mod
         jmp *     
 }
 
@@ -147,6 +151,19 @@ Multiply: {
    
 }
 
+Mod: {
+
+        // ZP.Num1 Operand, ZP.Num2 Divisor
+        // Result (Result) is in Accumulator
+                lda ZP.Num1
+                sec
+        loop:   sbc ZP.Num2
+                bcs loop
+                adc ZP.Num2
+                rts
+
+}
+
 
 TABLES: {
         TileToScreenLSB:
@@ -203,7 +220,7 @@ TABLES: {
 #import "game.asm" 
 #import "level.asm" 
 #import "input.asm"
-#import "sprites.asm"
+#import "pointer.asm"
 
 * = $A100 "Graphics"
 #import "graphics.asm"

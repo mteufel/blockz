@@ -28,21 +28,21 @@ INPUT: {
                     lda Up
                     bne down
                     dec Up
-                    jsr SPRITES.MovePointerUp
+                    jsr POINTER.MovePointerUp
 
         down:       lda Down
                     bne left
                     dec Down
-                    jsr SPRITES.MovePointerDown
+                    jsr POINTER.MovePointerDown
 
         left:       lda Left
                     bne right
-                    jsr SPRITES.MovePointerLeft
+                    jsr POINTER.MovePointerLeft
                     dec Left
 
         right:      lda Right
                     bne noAction
-                    jsr SPRITES.MovePointerRight
+                    jsr POINTER.MovePointerRight
                     dec Right
 
         noAction:   :delay(10,10)
