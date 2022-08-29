@@ -89,6 +89,7 @@ POINTER: {
                     cmp #$01
                     bne check_min
                     // reset Highbyte, set X-Pos to $00 and rts
+                    dec PointerIsAt
                     lda #$00
                     sta PointerHighByteFlag
                     lda $d010                   
@@ -98,11 +99,6 @@ POINTER: {
                     sta $d00e
                     sta $d00c
                     sta $d00a
-                    // Refresh PointerAtTile Position ------------------------------------
-                    ldx MOVED_X
-                    ldy MOVED_LEFT
-                    jsr RefreshPointerIsAt
-                    // -------------------------------------------------------------------
                     rts
 
         check_min:  lda PointerHighByteFlag       
@@ -145,15 +141,7 @@ POINTER: {
         check_x:    lda $d00e                     // and is the x-pos #$ff
                     cmp #$ff
                     bne check_max
-
-
-                    // Refresh PointerAtTile Position ------------------------------------
-                    // TODODODODODODO
-                    ldx MOVED_X
-                    ldy MOVED_RIGHT
-                    jsr RefreshPointerIsAt
-                    // -------------------------------------------------------------------
-
+                    inc PointerIsAt
                     lda #$01                      // then set the highbyte
                     sta PointerHighByteFlag
                     lda $d010                     // set the highbyte for all three sprites
@@ -199,6 +187,11 @@ POINTER: {
         do:         inc $d00f
                     inc $d00d
                     inc $d00b
+                    // Refresh PointerAtTile Position ------------------------------------
+                    ldx MOVED_Y
+                    ldy MOVED_DOWN
+                    jsr RefreshPointerIsAt
+                    // -------------------------------------------------------------------
                     rts
 
     }
@@ -216,7 +209,7 @@ POINTER: {
     }
 
     RefreshPointerIsAt: {
-
+                        
                         //   X = 1  ==> we handle X-Pos, otherwise Y-Pos
                         //   Y = 0 left/up | Y = 1 right/down 
                         tya  // remember Y on the stack
@@ -241,17 +234,17 @@ POINTER: {
                         beq moved_left
                         rts
         moved_right:    inc PointerIsAt   // Pointer + $01
-                        .break
-                        inc $d020
                         rts
         moved_left:     dec PointerIsAt   // Pointer - $01
-                        .break
-                        dec $d020
                         rts
 
         handle_y:       pla               // necessaray clean up the stack
-                        inc $d020
+                        tay
+                        cpy MOVED_DOWN
+                        beq moved_down
                         rts
+        moved_down:     inc $d020
+                        rts                
         exit:           pla               // necessary clean up the stack
                         rts
 

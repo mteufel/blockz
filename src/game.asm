@@ -1,13 +1,13 @@
 GAME: {
 
     Settings: {
-        currentLevel: .byte $02
+        currentLevel: .byte $00
     }
 
     Start: {
                 lda Settings.currentLevel
                 jsr LEVEL.LoadLevel
-                jsr LEVEL.DrawLevel
+                jsr LEVEL.DrawLevel 
 
     // delay "each frame" (1/50 Sekunden)
     //loop1:      lda #$fb
