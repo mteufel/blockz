@@ -1,21 +1,27 @@
 POINTER: {
 
-    PointerHighByteFlag:     .byte $00
-    PointerIsAt:             .byte $00      // this pointer gets updated everytime when the sprite pointer
-                                            // arrives at another tile (block) on the screen, rememeber, the layout is
-                                            //      
-                                            //         0   1   2   3   4   5   6   7   8   9   A   B
-                                            //     +----------------------------------------------------
-                                            //   0 |  00  01  02  03  04  05  06  07  08  09  0A  0B 
-                                            //   1 |  0C  0D  0E  0F  11  11  12  13  14  15  16  17    
-                                            //   2 |  18  19  1A  1B  1A  
-                                            //   3 |
-                                            //   4 |
-                                            //   5 |
-                                            //   6 |
-                                            //   7 |
-                                            //   8 |
-                                            //   9 |                                               77
+    PointerHighByteFlag:        .byte $00
+    PointerIsAt:                .byte $00     // this pointer gets updated everytime when the sprite pointer
+                                              // arrives at another tile (block) on the screen, rememeber, the layout is
+                                              //      
+                                              //         0   1   2   3   4   5   6   7   8   9   A   B
+                                              //     +----------------------------------------------------
+                                              //   0 |  00  01  02  03  04  05  06  07  08  09  0A  0B 
+                                              //   1 |  0C  0D  0E  0F  11  11  12  13  14  15  16  17    
+                                              //   2 |  18  19  1A  1B  1A  
+                                              //   3 |
+                                              //   4 |
+                                              //   5 |
+                                              //   6 |
+                                              //   7 |
+                                              //   8 |
+                                              //   9 |         
+    MOVED_RIGHT:                .byte $00
+    MOVED_LEFT:                 .byte $01
+    MOVED_UP:                   .byte $10
+    MOVED_DOWN:                 .byte $11
+    MOVED_X:                    .byte $00
+    MOVED_Y:                    .byte $01
 
     InitializePointer: {
 
@@ -92,6 +98,11 @@ POINTER: {
                     sta $d00e
                     sta $d00c
                     sta $d00a
+                    // Refresh PointerAtTile Position ------------------------------------
+                    ldx MOVED_X
+                    ldy MOVED_LEFT
+                    jsr RefreshPointerIsAt
+                    // -------------------------------------------------------------------
                     rts
 
         check_min:  lda PointerHighByteFlag       
@@ -100,10 +111,20 @@ POINTER: {
                     lda $d00e
                     cmp #$1d
                     bcs do
+                    // Refresh PointerAtTile Position ------------------------------------
+                    ldx MOVED_X
+                    ldy MOVED_LEFT
+                    jsr RefreshPointerIsAt
+                    // -------------------------------------------------------------------
                     rts
         do:         dec $d00e
                     dec $d00c
                     dec $d00a
+                    // Refresh PointerAtTile Position ------------------------------------
+                    ldx MOVED_X
+                    ldy MOVED_LEFT
+                    jsr RefreshPointerIsAt
+                    // -------------------------------------------------------------------
                     rts
     }
 
@@ -117,7 +138,6 @@ POINTER: {
 
                     // If the Highbyte is set and X-Pos > $2a 
                     //    we are at the right border and can't go further, so rts
-
                     lda PointerHighByteFlag       // is the highbyte
                     cmp #$00                      // not set go to check_x...
                     beq check_x
@@ -125,6 +145,15 @@ POINTER: {
         check_x:    lda $d00e                     // and is the x-pos #$ff
                     cmp #$ff
                     bne check_max
+
+
+                    // Refresh PointerAtTile Position ------------------------------------
+                    // TODODODODODODO
+                    ldx MOVED_X
+                    ldy MOVED_RIGHT
+                    jsr RefreshPointerIsAt
+                    // -------------------------------------------------------------------
+
                     lda #$01                      // then set the highbyte
                     sta PointerHighByteFlag
                     lda $d010                     // set the highbyte for all three sprites
@@ -134,9 +163,6 @@ POINTER: {
                     sta $d00e
                     sta $d00c
                     sta $d00a
-                    ldx #$00
-                    ldy #$01
-                    jsr RefreshPointerIsAt
                     rts
 
          check_max: lda PointerHighByteFlag       // again: check the highbyte
@@ -145,14 +171,23 @@ POINTER: {
                     lda $d00e                     // otherwise we check
                     cmp #$2a                      // if the pointer arrived the max x-pos
                     bcc do
+
+                    // Refresh PointerAtTile Position ------------------------------------
+                    ldx MOVED_X
+                    ldy MOVED_RIGHT
+                    jsr RefreshPointerIsAt
+                    // -------------------------------------------------------------------
                     rts 
 
         do:         inc $d00e
                     inc $d00c
                     inc $d00a
-                    ldx #$00
-                    ldy #$01
+
+                    // Refresh PointerAtTile Position ------------------------------------
+                    ldx MOVED_X
+                    ldy MOVED_RIGHT
                     jsr RefreshPointerIsAt
+                    // -------------------------------------------------------------------
                     rts
     }
 
@@ -184,35 +219,44 @@ POINTER: {
 
                         //   X = 1  ==> we handle X-Pos, otherwise Y-Pos
                         //   Y = 0 left/up | Y = 1 right/down 
-                        cpx #$01
-                        bne handle_y
+                        tya  // remember Y on the stack
+                        pha
+                        cpx MOVED_Y
+                        beq handle_y
         handle_x:       // Get Sprite X-Pos, divide by $18 (because one block is 18 pixels wide)
-                        // if the rest==0 we have to update the Pointer + $01
-                        cpy #01
-                        beq right_down
-        left_up:        rts
-        right_down:     inc $d020
-                        lda $d00e 
+                        // if the rest==0 we can have to update Pointer Position
+                        lda $d00e           // get the X-Pos
                         sta ZP.Num1
                         lda #$18
-                        sta ZP.Num2
-                        jsr Mod 
+                        sta ZP.Num2       
+                        jsr Mod             // Divide by $18 to find out if we're on another new tile (rest=0)
                         cmp #$00
-                        beq exit
-                        lda PointerIsAt
-                        sta ZP.Num1
-                        clc
-                        adc #$01
+                        bne exit
+                        .break
+                        pla                 // get back the Y-par from the stack
+                        tay
+                        cpy MOVED_RIGHT
+                        beq moved_right
+                        cpy MOVED_LEFT
+                        beq moved_left
                         rts
-        handle_y:       rts
-        exit:           rts
+        moved_right:    inc PointerIsAt   // Pointer + $01
+                        .break
+                        inc $d020
+                        rts
+        moved_left:     dec PointerIsAt   // Pointer - $01
+                        .break
+                        dec $d020
+                        rts
+
+        handle_y:       pla               // necessaray clean up the stack
+                        inc $d020
+                        rts
+        exit:           pla               // necessary clean up the stack
+                        rts
 
     }
 
-
-    Make: {
-
-    }
 
     * = $5000 "Sprite Data Mouse Body"
 
