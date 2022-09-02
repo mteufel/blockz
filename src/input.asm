@@ -45,7 +45,7 @@ INPUT: {
                     jsr POINTER.MovePointerRight
                     dec Right
 
-        noAction:   :delay(10,10)
+        noAction:   :delay(10,5)
                     rts
 
 

@@ -7,21 +7,20 @@ POINTER: {
                                               //         0   1   2   3   4   5   6   7   8   9   A   B
                                               //     +----------------------------------------------------
                                               //   0 |  00  01  02  03  04  05  06  07  08  09  0A  0B 
-                                              //   1 |  0C  0D  0E  0F  11  11  12  13  14  15  16  17    
-                                              //   2 |  18  19  1A  1B  1A  
-                                              //   3 |
-                                              //   4 |
-                                              //   5 |
-                                              //   6 |
-                                              //   7 |
-                                              //   8 |
-                                              //   9 |         
+                                              //   1 |  0C  0D  0E  0F  10  11  12  13  14  15  16  17    
+                                              //   2 |  18  19  1A  1B  1C  1D  1E  1F  20  21  22  23
+                                              //   3 |  24  25  26  27  28  29  2A  2B  2C  2D  2E  2F
+                                              //   4 |  30  31  32  33  34  35  36  37  38  39  3A  3B
+                                              //   5 |  3C  3D  3E  3F  40  41  42  43  44  45  46  47
+                                              //   6 |  48  49  4A  4B  4C  4D  4E  4F  50  51  52  52
+                                              //   7 |  53  54  55  56  57  59  5A  5B  5C  5D  5E  5F
+                                              //   8 |  60  61  62  63  64  65  66  67  68  69  6A  6B
+                                              //   9 |  6C  6D  6E  6F  70  71  72  73  74  75  76  77 
+
     MOVED_RIGHT:                .byte $00
     MOVED_LEFT:                 .byte $01
     MOVED_UP:                   .byte $10
     MOVED_DOWN:                 .byte $11
-    MOVED_X:                    .byte $00
-    MOVED_Y:                    .byte $01
 
     InitializePointer: {
 
@@ -108,8 +107,7 @@ POINTER: {
                     cmp #$1d
                     bcs do
                     // Refresh PointerAtTile Position ------------------------------------
-                    ldx MOVED_X
-                    ldy MOVED_LEFT
+                    ldx MOVED_LEFT
                     jsr RefreshPointerIsAt
                     // -------------------------------------------------------------------
                     rts
@@ -117,8 +115,7 @@ POINTER: {
                     dec $d00c
                     dec $d00a
                     // Refresh PointerAtTile Position ------------------------------------
-                    ldx MOVED_X
-                    ldy MOVED_LEFT
+                    ldx MOVED_LEFT
                     jsr RefreshPointerIsAt
                     // -------------------------------------------------------------------
                     rts
@@ -161,8 +158,7 @@ POINTER: {
                     bcc do
 
                     // Refresh PointerAtTile Position ------------------------------------
-                    ldx MOVED_X
-                    ldy MOVED_RIGHT
+                    ldx MOVED_RIGHT
                     jsr RefreshPointerIsAt
                     // -------------------------------------------------------------------
                     rts 
@@ -172,8 +168,7 @@ POINTER: {
                     inc $d00a
 
                     // Refresh PointerAtTile Position ------------------------------------
-                    ldx MOVED_X
-                    ldy MOVED_RIGHT
+                    ldx MOVED_RIGHT
                     jsr RefreshPointerIsAt
                     // -------------------------------------------------------------------
                     rts
@@ -183,13 +178,16 @@ POINTER: {
                     lda $d00f
                     cmp #$c9
                     bcc do
+                    // Refresh PointerAtTile Position ------------------------------------
+                    ldx MOVED_DOWN
+                    jsr RefreshPointerIsAt
+                    // -------------------------------------------------------------------
                     rts        
         do:         inc $d00f
                     inc $d00d
                     inc $d00b
                     // Refresh PointerAtTile Position ------------------------------------
-                    ldx MOVED_Y
-                    ldy MOVED_DOWN
+                    ldx MOVED_DOWN
                     jsr RefreshPointerIsAt
                     // -------------------------------------------------------------------
                     rts
@@ -200,63 +198,86 @@ POINTER: {
                     lda $d00f
                     cmp #$39
                     bcs do
+                    // Refresh PointerAtTile Position ------------------------------------
+                    ldx MOVED_UP
+                    jsr RefreshPointerIsAt
+                    // -------------------------------------------------------------------                    
                     rts
         do:         dec $d00f
                     dec $d00d
                     dec $d00b
+                    // Refresh PointerAtTile Position ------------------------------------
+                    ldx MOVED_UP
+                    jsr RefreshPointerIsAt
+                    // -------------------------------------------------------------------                    
                     rts
 
     }
 
     RefreshPointerIsAt: {
-                        
-                        //   X = 1  ==> we handle X-Pos, otherwise Y-Pos
-                        //   Y = 0 left/up | Y = 1 right/down 
-                        tya  // remember Y on the stack
-                        pha
-                        cpx MOVED_Y
-                        beq handle_y
-        handle_x:       // Get Sprite X-Pos, divide by $18 (because one block is 18 pixels wide)
-                        // if the rest==0 we can have to update Pointer Position
-                        lda $d00e           // get the X-Pos
-                        sta ZP.Num1
-                        lda #$18
-                        sta ZP.Num2       
-                        jsr Mod             // Divide by $18 to find out if we're on another new tile (rest=0)
-                        cmp #$00
-                        bne exit
-                        .break
-                        pla                 // get back the Y-par from the stack
-                        tay
-                        cpy MOVED_RIGHT
-                        beq moved_right
-                        cpy MOVED_LEFT
-                        beq moved_left
-                        rts
-        moved_right:    inc PointerIsAt   // Pointer + $01
-                        rts
-        moved_left:     dec PointerIsAt   // Pointer - $01
-                        rts
 
-        handle_y:       pla               // necessaray clean up the stack
-                        tay
-                        cpy MOVED_DOWN
-                        beq moved_down
-                        rts
-        moved_down:     inc $d020
-                        rts                
-        exit:           pla               // necessary clean up the stack
-                        rts
+                    // X holds, in which direction the mouse pointed moved
+                    // using the constants:
+                    // MOVED_RIGHT, MOVED_LEFT, MOVED_UP, MOVED_DOWN
+
+                    // calculate mod for the x position
+                    lda $d00e           // get x-pos 
+                    sta ZP.Num1
+                    lda #$18
+                    sta ZP.Num2       
+                    jsr Mod             // Divide by $18 to find out if we're on another new tile (rest=0)
+                    cmp #$00
+                    bne mod_y
+                    jsr RefreshPointerX               
+
+                    // calculate mod for the y position
+        mod_y:      lda $d00f           // get the y-pos
+                    sta ZP.Num1
+                    lda #$10
+                    sta ZP.Num2       
+                    jsr Mod 
+                    cmp #$00
+                    bne exit
+                    jsr RefreshPointerY
+
+        exit:       rts
+
+    }
+
+    RefreshPointerX: {
+                    cpx MOVED_LEFT
+                    beq moved_l
+                    cpx MOVED_RIGHT
+                    beq moved_r
+                    rts
+        moved_l:    dec PointerIsAt   // Pointer + $01
+                    rts
+        moved_r:    inc PointerIsAt   // Pointer + $01
+                    rts
+
+    }
+
+    RefreshPointerY: {
+                    cpx MOVED_UP
+                    beq moved_u
+                    cpx MOVED_DOWN
+                    beq moved_d
+                    rts
+        moved_d:    clc
+                    lda PointerIsAt
+                    adc #$0c        
+                    sta PointerIsAt   // continue $0b + $01 tiles
+                    rts         
+        moved_u:    clc
+                    lda PointerIsAt
+                    sbc #$0b    
+                    sta PointerIsAt   // go $0b tiles back
+                    rts                    
 
     }
 
 
     * = $5000 "Sprite Data Mouse Body"
-
-    //.byte 255,255,255
-    //.byte 255,255,255
-    //.byte 255,255,255
-    //.byte 255,255,255
 
     .byte 192,0,0
     .byte 240,0,0

@@ -29,7 +29,7 @@
 
     $E000-$EFFF      Free
 
-    $F000-$FFFF      Kernal, maybe I need it for irqs, so dont touch (at the moment)
+    $F000-$FFFF      Free / Kernal, maybe I need it for irqs eventhandling at a later point
 
 */
 
@@ -41,6 +41,7 @@
 
 BasicUpstart2(Entry)
 //BasicUpstart2(SimpleEntry)
+//BasicUpstart2(IRQ.Learn)
 
 SimpleEntry: {
         // this is only for debugging purposes to check calculations etc...
@@ -66,16 +67,18 @@ Entry: {
         lda #$35
         sta $01
 
-        blackScreen()
-        activateBitmapMode()
-        activateMulticolorMode()
-        switchVicBank1()
-        setStartOfBitmapAndScreenRam()
-        
+        //blackScreen()
+        //activateBitmapMode()
+        //activateMulticolorMode()
+        //switchVicBank1()
+        //setStartOfBitmapAndScreenRam()
+
+        jsr IRQ.Install      
         cli
 
-        jsr ClearScreen
-        jmp INTRO.Start
+        //jsr ClearScreen
+        //jmp INTRO.Start
+        jmp *
 }
 
 * = * "Utitily functions and tables"
@@ -221,10 +224,11 @@ TABLES: {
 #import "level.asm" 
 #import "input.asm"
 #import "pointer.asm"
+#import "irq.asm"
 
 * = $A100 "Graphics"
 #import "graphics.asm"
 
 
 * = $8000 "Level Data"
-#import "levels3.asm"
+#import "levels.asm"
