@@ -56,29 +56,29 @@ SimpleEntry: {
 
 Entry: {
         sei
-
-        // enable interrupts
+        
         lda #$7f
-        sta $dc0d
-        sta $dd0d
+        sta $dc0d        // disable interrupts from the CIA-1 
+        sta $dd0d        // and CIA-2
+        lda $dc0d
+        lda $dd0d
 
         //  RAM between $A000-$BFFF, $E000-$FFFF available, I/O area visible at $D000-DFFF
-        //  this means, kernal functions e.g. for irq handling not available at the moment
+        //  this means, kernal functions not available 
         lda #$35
         sta $01
+        
 
-        //blackScreen()
-        //activateBitmapMode()
-        //activateMulticolorMode()
-        //switchVicBank1()
-        //setStartOfBitmapAndScreenRam()
-
-        jsr IRQ.Install      
+        blackScreen()
+        activateBitmapMode()
+        activateMulticolorMode()
+        switchVicBank1()
+        setStartOfBitmapAndScreenRam()
         cli
-
-        //jsr ClearScreen
-        //jmp INTRO.Start
-        jmp *
+        jsr ClearScreen
+        
+        jmp INTRO.Start
+        
 }
 
 * = * "Utitily functions and tables"
@@ -223,8 +223,9 @@ TABLES: {
 #import "game.asm" 
 #import "level.asm" 
 #import "input.asm"
-#import "pointer.asm"
 #import "irq.asm"
+#import "pointer.asm"  // has to be the last import because it fills also $5000+  
+
 
 * = $A100 "Graphics"
 #import "graphics.asm"

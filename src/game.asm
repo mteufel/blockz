@@ -9,13 +9,14 @@ GAME: {
                     jsr LEVEL.LoadLevel
                     jsr LEVEL.DrawLevel 
 
-    /*
-                    jsr POINTER.InitializePointer
-    x:              jsr INPUT.ReadJoystick
-                    jsr INPUT.Reaction
-                    jmp x
-                    */
+                    jsr IRQ.Install      
 
+    
+                    jsr POINTER.InitializePointer
+    loop:           jsr INPUT.ReadJoystick
+                    jsr INPUT.Reaction
+                    jmp loop
+    /*
     loop:           ldx #$0d
                     lda #$51
                     jsr LEVEL.RecolorTile
@@ -45,6 +46,8 @@ GAME: {
                     jsr LEVEL.RecolorTile
                     :delay(255,50)                                                                                
                     jmp loop
+                    */
+
 
     }
 }
