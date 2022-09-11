@@ -1,6 +1,6 @@
 POINTER: {
 
-    PointerHighByteFlag:        .byte $00
+    PointerHighByteFlag:        .byte $00     // this one marks if the sprite x position needs the hi-byte because position is > $ff
     PointerIsAt:                .byte $00     // this pointer gets updated everytime when the sprite pointer
                                               // arrives at another tile (block) on the screen, rememeber, the layout is
                                               //      
@@ -16,11 +16,6 @@ POINTER: {
                                               //   7 |  53  54  55  56  57  59  5A  5B  5C  5D  5E  5F
                                               //   8 |  60  61  62  63  64  65  66  67  68  69  6A  6B
                                               //   9 |  6C  6D  6E  6F  70  71  72  73  74  75  76  77 
-
-    MOVED_RIGHT:                .byte $00
-    MOVED_LEFT:                 .byte $01
-    MOVED_UP:                   .byte $10
-    MOVED_DOWN:                 .byte $11
 
     InitializePointer: {
 
@@ -88,7 +83,7 @@ POINTER: {
                     cmp #$01
                     bne check_min
                     // reset Highbyte, set X-Pos to $00 and rts
-                    dec PointerIsAt
+                    //dec PointerIsAt
                     lda #$00
                     sta PointerHighByteFlag
                     lda $d010                   
@@ -106,18 +101,10 @@ POINTER: {
                     lda $d00e
                     cmp #$1d
                     bcs do
-                    // Refresh PointerAtTile Position ------------------------------------
-                    ldx MOVED_LEFT
-                    jsr RefreshPointerIsAt
-                    // -------------------------------------------------------------------
                     rts
         do:         dec $d00e
                     dec $d00c
                     dec $d00a
-                    // Refresh PointerAtTile Position ------------------------------------
-                    ldx MOVED_LEFT
-                    jsr RefreshPointerIsAt
-                    // -------------------------------------------------------------------
                     rts
     }
 
@@ -138,7 +125,7 @@ POINTER: {
         check_x:    lda $d00e                     // and is the x-pos #$ff
                     cmp #$ff
                     bne check_max
-                    inc PointerIsAt
+                    //inc PointerIsAt
                     lda #$01                      // then set the highbyte
                     sta PointerHighByteFlag
                     lda $d010                     // set the highbyte for all three sprites
@@ -156,21 +143,11 @@ POINTER: {
                     lda $d00e                     // otherwise we check
                     cmp #$2a                      // if the pointer arrived the max x-pos
                     bcc do
-
-                    // Refresh PointerAtTile Position ------------------------------------
-                    ldx MOVED_RIGHT
-                    jsr RefreshPointerIsAt
-                    // -------------------------------------------------------------------
                     rts 
 
         do:         inc $d00e
                     inc $d00c
                     inc $d00a
-
-                    // Refresh PointerAtTile Position ------------------------------------
-                    ldx MOVED_RIGHT
-                    jsr RefreshPointerIsAt
-                    // -------------------------------------------------------------------
                     rts
     }
 
@@ -178,18 +155,10 @@ POINTER: {
                     lda $d00f
                     cmp #$c9
                     bcc do
-                    // Refresh PointerAtTile Position ------------------------------------
-                    ldx MOVED_DOWN
-                    jsr RefreshPointerIsAt
-                    // -------------------------------------------------------------------
                     rts        
         do:         inc $d00f
                     inc $d00d
                     inc $d00b
-                    // Refresh PointerAtTile Position ------------------------------------
-                    ldx MOVED_DOWN
-                    jsr RefreshPointerIsAt
-                    // -------------------------------------------------------------------
                     rts
 
     }
@@ -198,82 +167,97 @@ POINTER: {
                     lda $d00f
                     cmp #$39
                     bcs do
-                    // Refresh PointerAtTile Position ------------------------------------
-                    ldx MOVED_UP
-                    jsr RefreshPointerIsAt
-                    // -------------------------------------------------------------------                    
                     rts
         do:         dec $d00f
                     dec $d00d
                     dec $d00b
-                    // Refresh PointerAtTile Position ------------------------------------
-                    ldx MOVED_UP
-                    jsr RefreshPointerIsAt
-                    // -------------------------------------------------------------------                    
                     rts
 
     }
 
     RefreshPointerIsAt: {
 
-                    // X holds, in which direction the mouse pointed moved
-                    // using the constants:
-                    // MOVED_RIGHT, MOVED_LEFT, MOVED_UP, MOVED_DOWN
-
-                    // calculate mod for the x position
-                    lda $d00e           // get x-pos 
-                    sta ZP.Num1
+                    //  My formula to calculate the position in the matrix from the sprite coordinates
+                    //  
+                    //  x = ( SPRITE_X - $18 ) / $18            - $18 because we need to base our calc on x coord=0, divide by $18 because one block is $18/24 pixels wide
+                    //  y = ( SPRITE_Y - $32 ) / $10            - $32 because we need to base out calc on y coord=0, divide by $18 because on block is $10/16 pixel high
+                    //  PointerIsAt = y * $0c + x                 $0c because one row in the playfield has $0b fields or blockz + $01 to get to the next row = $0c
+                    // 
+                    
+                    // x calculation
+                    lda $d00e
+                    sta ZP.Num1Lo
+                    lda PointerHighByteFlag
+                    sta ZP.Num1Hi
                     lda #$18
-                    sta ZP.Num2       
-                    jsr Mod             // Divide by $18 to find out if we're on another new tile (rest=0)
-                    cmp #$00
-                    bne mod_y
-                    jsr RefreshPointerX               
+                    sta ZP.Num2Lo
+                    lda #$00
+                    sta ZP.Num2Hi
+                    jsr Subtract
 
-                    // calculate mod for the y position
-        mod_y:      lda $d00f           // get the y-pos
-                    sta ZP.Num1
+                    
+                    lda ZP.ResultLo
+                    sta ZP.Num1Lo
+                    lda ZP.ResultHi
+                    sta ZP.Num1Hi
+                    lda #$18
+                    sta ZP.Num2Lo
+                    lda #$00
+                    sta ZP.Num2Hi
+                    jsr Divide
+
+                    lda ZP.ResultLo
+                    sta ZP.Temp1Lo    
+                    lda ZP.ResultHi
+                    sta ZP.Temp1Hi
+
+
+                    //y calculation
+                    lda $d00f
+                    sta ZP.Num1Lo
+                    lda #$00
+                    sta ZP.Num1Hi
+                    lda #$32
+                    sta ZP.Num2Lo
+                    lda #$00
+                    sta ZP.Num2Hi
+                    jsr Subtract
+
+                    lda ZP.ResultLo
+                    sta ZP.Num1Lo
+                    lda ZP.ResultHi
+                    sta ZP.Num1Hi
                     lda #$10
-                    sta ZP.Num2       
-                    jsr Mod 
-                    cmp #$00
-                    bne exit
-                    jsr RefreshPointerY
+                    sta ZP.Num2Lo
+                    lda #$00
+                    sta ZP.Num2Hi
+                    jsr Divide
 
-        exit:       rts
+                    lda ZP.ResultLo
+                    sta ZP.Temp2Lo    
+                    lda ZP.ResultHi
+                    sta ZP.Temp2Hi
 
-    }
+                    // calculate row
+                    lda ZP.Temp2Lo
+                    sta ZP.Num1
+                    lda #$0c
+                    sta ZP.Num2
+                    jsr Multiply
 
-    RefreshPointerX: {
-                    cpx MOVED_LEFT
-                    beq moved_l
-                    cpx MOVED_RIGHT
-                    beq moved_r
+                    sta ZP.Num1Lo
+                    lda #$00
+                    sta ZP.Num1Hi
+
+                    lda ZP.Temp1Lo
+                    sta ZP.Num2Lo
+                    lda #$00
+                    sta ZP.Num2Hi
+                    jsr Add
+
+                    lda ZP.ResultLo
+                    sta PointerIsAt
                     rts
-        moved_l:    dec PointerIsAt   // Pointer + $01
-                    rts
-        moved_r:    inc PointerIsAt   // Pointer + $01
-                    rts
-
-    }
-
-    RefreshPointerY: {
-                    cpx MOVED_UP
-                    beq moved_u
-                    cpx MOVED_DOWN
-                    beq moved_d
-                    rts
-        moved_d:    clc
-                    lda PointerIsAt
-                    adc #$0c        
-                    sta PointerIsAt   // continue $0b + $01 tiles
-                    rts         
-        moved_u:    clc
-                    lda PointerIsAt
-                    sbc #$0b    
-                    sta PointerIsAt   // go $0b tiles back
-                    rts                    
-
     }
 
 

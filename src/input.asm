@@ -1,10 +1,11 @@
 INPUT: {
 
-    Up:         .byte 0
-    Down:       .byte 0
-    Left:       .byte 0
-    Right:      .byte 0
-    Button:     .byte 0
+    Up:         .byte $00
+    Down:       .byte $00
+    Left:       .byte $00
+    Right:      .byte $00
+    Button:     .byte $00
+    Debounce:   .byte $00
 
     ReadJoystick: {
 
@@ -34,16 +35,32 @@ INPUT: {
                     bne left
                     dec Down
                     jsr POINTER.MovePointerDown
+                    jsr POINTER.RefreshPointerIsAt
 
         left:       lda Left
                     bne right
-                    jsr POINTER.MovePointerLeft
                     dec Left
+                    jsr POINTER.MovePointerLeft
+                    jsr POINTER.RefreshPointerIsAt
 
         right:      lda Right
-                    bne noAction
-                    jsr POINTER.MovePointerRight
+                    bne button
                     dec Right
+                    jsr POINTER.MovePointerRight
+                    jsr POINTER.RefreshPointerIsAt
+        
+        button:     lda Button
+                    bne debounce
+                    lda #$01
+                    sta Debounce
+                    rts
+
+        debounce:   lda Debounce
+                    beq noAction
+                    lda #$00
+                    sta Debounce
+                    inc $d020
+
 
         noAction:   :delay(10,5)
                     rts

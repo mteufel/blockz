@@ -125,17 +125,28 @@ ClearScreen: {
 }
 
 Add: {
-            clc
-            lda ZP.Num1Lo
-            adc ZP.Num2Lo
-            sta ZP.ResultLo
-            lda ZP.Num1Hi
-            adc ZP.Num2Hi
-            sta ZP.ResultHi
-            clc
-            rts
+                clc
+                lda ZP.Num1Lo
+                adc ZP.Num2Lo
+                sta ZP.ResultLo
+                lda ZP.Num1Hi
+                adc ZP.Num2Hi
+                sta ZP.ResultHi
+                rts
 
 }
+
+Subtract: {
+                sec
+                lda ZP.Num1Lo
+                sbc ZP.Num2Lo
+                sta ZP.ResultLo
+                lda ZP.Num1Hi
+                sbc ZP.Num2Hi
+                sta ZP.ResultHi
+                rts
+}
+
 
 Multiply: {
 
@@ -152,6 +163,48 @@ Multiply: {
                 bne loop
                 rts
    
+}
+
+Divide: {
+        
+        // ZP.Num1Lo/Hi -> divident
+        // ZP.Num2Lo/Hi -> divisor
+        // ZP.Num3Lo/Hi -> remainder (Rest)
+        // ZP.ResultLo/Hi -> result
+        // original code from codebase64 (thx)
+
+
+               lda #$00	  
+	       sta ZP.Num3Lo
+	       sta ZP.Num3Hi
+	       ldx #16
+
+        !:     asl ZP.Num1Lo	
+	       rol ZP.Num1Hi
+	       rol ZP.Num3Lo	
+	       rol ZP.Num3Hi
+	       lda ZP.Num3Lo	
+	       sec
+	       sbc ZP.Num2Lo	
+	       tay	        
+	       lda ZP.Num3Hi
+	       sbc ZP.Num2Hi
+	       bcc skip	
+
+	       sta ZP.Num3Hi	
+	       sty ZP.Num3Lo	
+	       inc ZP.Num1Lo
+
+        skip:  dex
+	       bne !-	
+
+               lda ZP.Num1Lo
+               sta ZP.ResultLo
+               lda ZP.Num1Hi
+               sta ZP.ResultHi
+
+	       rts 
+
 }
 
 Mod: {
@@ -223,7 +276,6 @@ TABLES: {
 #import "game.asm" 
 #import "level.asm" 
 #import "input.asm"
-#import "irq.asm"
 #import "pointer.asm"  // has to be the last import because it fills also $5000+  
 
 

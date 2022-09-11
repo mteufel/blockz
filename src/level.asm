@@ -7,8 +7,9 @@ LEVEL: {
         InitialBlocksTile: .fill 120, $ff
 
 
-        Display:            .fill 120, $01
         Current:            .fill 120, $00
+        CurrentBlocksPos:   .fill 120, $ff
+        CurrentBlocksTile:  .fill 120, $ff
 
     }
 
@@ -70,6 +71,7 @@ LEVEL: {
         !end:
 
                 jsr CopyInitialMap
+                jsr CopyInitialBlocksData
 
                 rts
     }  
@@ -79,7 +81,6 @@ LEVEL: {
     CopyInitialMap: {
                 ldx #$78
         !:      lda Data.Initial,x
-                sta Data.Display,x
                 sta Data.Current,x
                 dex
                 bpl !-
@@ -88,13 +89,15 @@ LEVEL: {
     }
 
     CopyInitialBlocksData: {
-                ldx #$7e
-        !:      lda Data.Initial,x
-                sta Data.Display,x
-                sta Data.Current,x
-                dex
-                bpl !-
-                rts           
+                ldx #$00
+        !:      lda Data.InitialBlocksPos,x
+                sta Data.CurrentBlocksPos,x
+                lda Data.InitialBlocksTile,x
+                sta Data.CurrentBlocksTile,x
+                inx
+                cmp #$ff
+                bne !-
+                rts
     }
 
 
@@ -108,7 +111,7 @@ LEVEL: {
                         txa
                         pha
 
-                        lda Data.Display, x
+                        lda Data.Current, x
                         jsr DrawTile
 
                         pla
@@ -118,15 +121,13 @@ LEVEL: {
                 bne !-
 
 
-                // paint the initial stones
-                //lda #$67
-                //jsr LEVEL.CalculateStonePos
-        debug:  ldy #$00
-        !:      lda Data.InitialBlocksPos,y 
+                // paint the initial blockz
+                ldy #$00
+        !:      lda Data.CurrentBlocksPos,y 
                 cmp #$ff
                 beq !end+ 
                 tax
-                lda Data.InitialBlocksTile,y
+                lda Data.CurrentBlocksTile,y
                 sty ZP.Temp
                 jsr DrawTile
                 ldy ZP.Temp 

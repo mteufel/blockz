@@ -5,7 +5,7 @@ ZP: {
     LevelDataVector:   .word $000
     LevelTemp:         .byte $00
         
-    TileDrawVector:    .word $0000     // .word = zwei Bytes lang
+    TileDrawVector:    .word $0000     // .word = two bytes long
     TileDrawTemp:      .byte $00
     TileDrawTemp2:     .byte $00
     TileElementVector: .word $0000
@@ -16,11 +16,18 @@ ZP: {
     Num1Hi:            .byte $00 
     Num2Lo:            .byte $00
     Num2Hi:            .byte $00
+    Num3Lo:            .byte $00
+    Num3Hi:            .byte $00
     ResultLo:          .byte $00
     ResultHi:          .byte $00
 
     Num1:              .byte $00
     Num2:              .byte $00
     Num3:              .byte $00
+
+    Temp1Lo:           .byte $00
+    Temp1Hi:           .byte $00
+    Temp2Lo:           .byte $00
+    Temp2Hi:           .byte $00
     
 }
