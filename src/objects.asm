@@ -1,4 +1,4 @@
-POINTER: {
+OBJECTS: {
 
     PointerHighByteFlag:        .byte $00     // this one marks if the sprite x position needs the hi-byte because position is > $ff
     PointerIsAt:                .byte $00     // this pointer gets updated everytime when the sprite pointer
@@ -16,6 +16,39 @@ POINTER: {
                                               //   7 |  53  54  55  56  57  59  5A  5B  5C  5D  5E  5F
                                               //   8 |  60  61  62  63  64  65  66  67  68  69  6A  6B
                                               //   9 |  6C  6D  6E  6F  70  71  72  73  74  75  76  77 
+
+    InitializeBlockSprite: {
+                lda $d01c
+                ora #%00000000  // sprite 4 multicolor please
+                sta $d01c
+
+                lda $d01b
+                ora #%00000000  // sprite 4 in front of the background please
+                sta $d01b
+
+                lda #WHITE
+                sta $d02b       // make the sprite white
+
+                jsr CalculatePointerIsAtToSpriteCoordinates
+                stx $d008
+                sty $d009
+
+                lda $d015 
+                ora #%00010000  // turn on sprite 4
+                sta $d015
+
+                lda PointerHighByteFlag
+                cmp #$00
+                beq continue
+                lda #%00000000               
+                ora #%00010000   // sprite 4 is outside
+                sta $d010        
+    continue:   lda #$43
+                sta $43fc
+                rts
+
+    }
+
 
     InitializePointer: {
 
@@ -36,21 +69,24 @@ POINTER: {
                 lda #BLACK
                 sta $d02c       // color sprite 5 (shadow bottom)
 
+                lda #WHITE
+                sta $d02b       // make the sprite white
+
+
                 lda #%00000000               
                 sta $d010        // alle sprites are not outside x/y > $ff
 
-                //ldx #$aa         // initially we position the mouse pointer to the middle of the screen              
                 ldx #$18
                 stx $d00e        // sprite 7 X-pos
                 stx $d00c        // sprite 6 X-pos
                 stx $d00a        // sprite 5 X-pos
+                
 
-
-                //ldy #$7a         // initially we position the mouse pointer to the middle of the screen                          
                 ldy #$32
                 sty $d00f        // sprite 7 Y-pos        
                 sty $d00d        // sprite 6 Y-pos
                 sty $d00b        // sprite 5 Y-pos        
+
 
                 lda #%11100000
                 sta $d015       // turn on sprite 7, 6, 5
@@ -171,6 +207,98 @@ POINTER: {
         do:         dec $d00f
                     dec $d00d
                     dec $d00b
+                    rts
+
+    }
+
+    CalculatePointerIsAtToSpriteCoordinates: {
+                    // Result in X and Y registers
+                    // 
+                    // formula:
+                    //
+                    // row Y = PointerIsAt / $0c         -> $0c = tiles in one row of the play field matrix
+                    // row X = PointerIsAt - ( Y * $0c )  // TODO CHANGE TO MODULO !!!!
+                    //
+                    // x = X * $18 + $18                 -> $18 because a block object has a 18 pix width, another $18 because correlation of visible area (starts at x=$18)
+                    // y = Y * $10 + $32
+
+                    // row Y = PointerIsAt / $0c         -> $0c = tiles in one row of the play field matrix
+                    
+                    lda PointerIsAt
+                    sta ZP.Num1Lo
+                    lda #$00
+                    sta ZP.Num1Hi
+                    lda #$0c
+                    sta ZP.Num2Lo
+                    lda #$00
+                    sta ZP.Num2Hi
+                    jsr Divide
+
+                    lda ZP.ResultLo
+                    sta ZP.Temp1Lo
+                    lda ZP.ResultHi
+                    sta ZP.Temp1Hi
+                    
+                    // row X = PointerIsAt - ( Y * $0c )
+                    lda ZP.Temp1Lo
+                    sta ZP.Num1
+                    lda #$0c
+                    sta ZP.Num2
+                    jsr Multiply
+
+                    ldx PointerIsAt
+                    stx ZP.Num1Lo
+                    ldx #$00
+                    stx ZP.Num1Hi
+                    sta ZP.Num2Lo
+                    lda #$00
+                    sta ZP.Num2Hi
+                    jsr Subtract
+                    .break
+                    lda ZP.ResultLo
+                    sta ZP.Temp2Lo
+                    lda ZP.ResultHi
+                    sta ZP.Temp2Hi
+                
+                     // x = X * $18 + $18
+                    lda ZP.Temp2Lo
+                    sta ZP.Num1
+                    lda #$18
+                    sta ZP.Num2
+                    jsr Multiply
+
+
+                    sta ZP.Num1Lo
+                    lda #$00
+                    sta ZP.Num1Hi
+                    lda #$18
+                    sta ZP.Num2Lo
+                    lda #$00
+                    sta ZP.Num2Hi
+                    jsr Add
+
+
+                    ldx ZP.ResultLo
+
+                    // y = Y * $10 + $32
+                    lda ZP.Temp1Lo
+                    sta ZP.Num1
+                    lda #$10
+                    sta ZP.Num2
+                    jsr Multiply
+
+                    sta ZP.Num1Lo
+                    lda #$00
+                    sta ZP.Num1Hi
+                    lda #$32
+                    sta ZP.Num2Lo
+                    lda #$00
+                    sta ZP.Num2Hi
+                    jsr Add
+
+
+                    ldy ZP.ResultLo
+
                     rts
 
     }
@@ -334,4 +462,27 @@ POINTER: {
     .byte 0,0,0
     .byte 0
 
+    * = $50c0 "Selected Block Sprite Data"
+
+    .byte 255,255,255
+    .byte 255,255,255
+    .byte 255,255,255
+    .byte 255,255,255
+    .byte 255,255,255
+    .byte 255,255,255
+    .byte 255,255,255
+    .byte 255,255,255
+    .byte 255,255,255
+    .byte 255,255,255
+    .byte 255,255,255
+    .byte 255,255,255
+    .byte 255,255,255
+    .byte 255,255,255
+    .byte 255,255,255
+    .byte 255,255,255
+    .byte 0,0,0
+    .byte 0,0,0
+    .byte 0,0,0
+    .byte 0,0,0
+    .byte 0
 }

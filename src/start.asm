@@ -276,7 +276,7 @@ TABLES: {
 #import "game.asm" 
 #import "level.asm" 
 #import "input.asm"
-#import "pointer.asm"  // has to be the last import because it fills also $5000+  
+#import "objects.asm"  // has to be the last import because it fills also $5000+  
 
 
 * = $A100 "Graphics"

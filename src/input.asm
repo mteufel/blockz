@@ -29,25 +29,26 @@ INPUT: {
                     lda Up
                     bne down
                     dec Up
-                    jsr POINTER.MovePointerUp
+                    jsr OBJECTS.MovePointerUp
+                    jsr OBJECTS.RefreshPointerIsAt
 
         down:       lda Down
                     bne left
                     dec Down
-                    jsr POINTER.MovePointerDown
-                    jsr POINTER.RefreshPointerIsAt
+                    jsr OBJECTS.MovePointerDown
+                    jsr OBJECTS.RefreshPointerIsAt
 
         left:       lda Left
                     bne right
                     dec Left
-                    jsr POINTER.MovePointerLeft
-                    jsr POINTER.RefreshPointerIsAt
+                    jsr OBJECTS.MovePointerLeft
+                    jsr OBJECTS.RefreshPointerIsAt
 
         right:      lda Right
                     bne button
                     dec Right
-                    jsr POINTER.MovePointerRight
-                    jsr POINTER.RefreshPointerIsAt
+                    jsr OBJECTS.MovePointerRight
+                    jsr OBJECTS.RefreshPointerIsAt
         
         button:     lda Button
                     bne debounce
@@ -59,7 +60,7 @@ INPUT: {
                     beq noAction
                     lda #$00
                     sta Debounce
-                    inc $d020
+                    jmp GAME.BlockActivated
 
 
         noAction:   :delay(10,5)

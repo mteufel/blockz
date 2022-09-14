@@ -1,7 +1,7 @@
 GAME: {
 
     Data: {
-        currentLevel: .byte $03
+        currentLevel: .byte $01
 
         lastPosition: .byte $00
         position:     .byte $00       // if this variable > $00 (and filled with a playfield coordinate) the flashing is active
@@ -18,7 +18,7 @@ GAME: {
         waits:        .byte $ff,$ff, $00       // table with wai values for each fade state, so i can control exactly the fade, $00 means end of this wait cylce  
                       .byte $a0, $00 
                       .byte $a0, $00 
-                      .byte $ff, $ff, $00      // in the white phase of the fade, we stay a little bit longer 
+                      .byte $ff, $ff, $ff, $ff, $00      // in the white phase of the fade, we stay a little bit longer 
                       .byte $a0, $00 
                       .byte $a0, $00      
    
@@ -30,7 +30,7 @@ GAME: {
                     lda Data.currentLevel
                     jsr LEVEL.LoadLevel
                     jsr LEVEL.DrawLevel 
-                    jsr POINTER.InitializePointer
+                    jsr OBJECTS.InitializePointer
 
                     // ============================================================
                     // MAIN GAME LOOP
@@ -43,6 +43,28 @@ GAME: {
                     jsr HandleLastPosition
                     jmp loop
 
+    }
+
+    BlockActivated: {
+                    lda Data.position
+                    cmp #$00
+                    bne continue
+                    rts
+        continue:   sta Data.lastPosition
+                    jsr HandleLastPosition
+
+
+                    ldx OBJECTS.PointerIsAt
+                    lda LEVEL.Data.Current,x
+                    jsr LEVEL.DrawTileComplete
+
+
+
+                    ldx OBJECTS.PointerIsAt       // this here is
+                    inx                           // only
+                    stx OBJECTS.PointerIsAt       // temprorary !!!!!!
+                    jsr OBJECTS.InitializeBlockSprite
+                    jmp *
     }
 
     HandleLastPosition: {
@@ -66,7 +88,7 @@ GAME: {
                     inx
                     cmp #$ff
                     beq off
-                    cmp POINTER.PointerIsAt
+                    cmp OBJECTS.PointerIsAt
                     bne !-
         match:      cmp #$00
                     beq store
@@ -116,8 +138,7 @@ GAME: {
                     cmp #$00
                     beq nextWait
                     rts
-        nextWait:   .break
-                    inc Data.waitIndex
+        nextWait:   inc Data.waitIndex
         loadWait:   ldx Data.waitIndex
                     lda Data.waits,x
                     cmp #$00

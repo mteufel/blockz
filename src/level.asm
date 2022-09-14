@@ -139,11 +139,28 @@ LEVEL: {
 
     }      
 
+    DrawTileComplete: {
+                
+                // Tile-Element Number in accumulator
+                // Position in X
+                // Description see DrawTile
+
+                ldy #$01
+                sty ZP.TileStoreBitmap
+                jsr DrawTile
+                rts
+
+    }
 
     DrawTile: {
 
                 // Tile-Element Number in accumulator
                 // Position in X
+
+                // Remember This one checks ZP.TileStoreTemp (for the Recolor/Fade Stuff)
+                // if the Bitmap has to be drawn ! 
+                // If you want to make that the complete Tile is drawn dont call this function
+                // and use DrawTileComplete instead!!!
 
                 stx ZP.TileDrawTemp
                 jsr GRAPHICS.CopyTile
