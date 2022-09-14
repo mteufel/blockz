@@ -57,13 +57,8 @@ GAME: {
                     ldx OBJECTS.PointerIsAt
                     lda LEVEL.Data.Current,x
                     jsr LEVEL.DrawTileComplete
-
-
-
-                    ldx OBJECTS.PointerIsAt       // this here is
-                    inx                           // only
-                    stx OBJECTS.PointerIsAt       // temprorary !!!!!!
                     jsr OBJECTS.InitializeBlockSprite
+                    
                     jmp *
     }
 
