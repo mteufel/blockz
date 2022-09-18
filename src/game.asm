@@ -1,7 +1,7 @@
 GAME: {
 
     Data: {
-        currentLevel: .byte $01
+        currentLevel: .byte $00
 
         lastPosition: .byte $00
         position:     .byte $00       // if this variable > $00 (and filled with a playfield coordinate) the flashing is active
@@ -53,11 +53,15 @@ GAME: {
         continue:   sta Data.lastPosition
                     jsr HandleLastPosition
 
+                    .break
+                    // Create the sprite representation out of the marked block
+                    jsr OBJECTS.InitializeBlockSprite
 
+                    // Restore the background so that only the sprite is in front of
                     ldx OBJECTS.PointerIsAt
                     lda LEVEL.Data.Current,x
                     jsr LEVEL.DrawTileComplete
-                    jsr OBJECTS.InitializeBlockSprite
+
                     
                     jmp *
     }
@@ -150,6 +154,27 @@ GAME: {
                     sta Data.counter
                     rts
 
+    }
+
+    CheckPointerIsAt: {
+                    // This routine checks if there is a block 
+                    // at the position OBJECTS.PointerIsAt
+                    //
+                    // x = $00 no match (no Block which can be selected in PointerIsAt)
+                    // x > $00 The id of of the block that is at PointerIsAt
+                    ldx #$00
+        !:          lda LEVEL.Data.CurrentBlocksPos,x
+                    inx
+                    cmp #$ff
+                    beq noMatch
+                    cmp OBJECTS.PointerIsAt
+                    bne !-
+        match:      dex
+                    lda LEVEL.Data.CurrentBlocksTile,x
+                    tax
+                    rts
+        noMatch:    ldx #$00
+                    rts    
     }
 
 }
