@@ -37,7 +37,7 @@ GAME: {
                     // ============================================================
 
     loop:           jsr INPUT.ReadJoystick
-                    jsr INPUT.Reaction
+                    jsr INPUT.Reaction                 // if the user presses fire, GAME.BlockActivated gets called
                     jsr RefreshPosition
                     jsr FadeSelectedBlockIfAny
                     jsr HandleLastPosition
@@ -62,6 +62,8 @@ GAME: {
                     lda LEVEL.Data.Current,x
                     jsr LEVEL.DrawTileComplete
 
+                    // And now move the sprite 50 pixels up
+                    jsr OBJECTS.MoveBlockSprite
                     
                     jmp *
     }

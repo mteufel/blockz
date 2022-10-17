@@ -25,6 +25,14 @@ OBJECTS: {
                                 .byte $4c, $4d, $4e, $4f
                                 .byte $4b, $48, $50, $51
 
+    SelectedBlock:              .byte $00     // Reference to the type of the selected stone (is a a Down, Up, LeftUp, ... references to BlocksTable)
+    BlockMoveXStart:            .byte $00
+    BlockMoveXEnd:              .byte $00
+    BlockMoveYStart:            .byte $00
+    BlockMoveYEnd:              .byte $00
+    
+
+
     InitializeBlockSprite: {
                 lda $d01c
                 ora #%00011110  // sprite 4,3,2 in multicolor please
@@ -83,20 +91,15 @@ OBJECTS: {
 
                 // but for the direction pointer on the block
                 // we need special layouts, so we have to find out which
-                .break
                 jsr GAME.CheckPointerIsAt
-                stx ZP.Temp
+                stx SelectedBlock
                 ldx #$00
         !:      lda BlocksTable,x
-                cmp ZP.Temp
+                cmp SelectedBlock
                 beq match
                 inx
                 bne !-
         match:  lda SpritePointerTable,x
-
-
-
-                //lda #$48
                 sta $43f9                
                 rts
 
@@ -199,246 +202,275 @@ OBJECTS: {
 
     MovePointerRight: {
 
-                    // If the Highbyte is set we are at a X-Position > $FF
-                    
-                    // If the Hightbye is not set and X-Pos = $FF 
-                    //    ==> set Highbyte to $01
-                    //    ==> set X-Pos to $00
+                        // If the Highbyte is set we are at a X-Position > $FF
+                        
+                        // If the Hightbye is not set and X-Pos = $FF 
+                        //    ==> set Highbyte to $01
+                        //    ==> set X-Pos to $00
 
-                    // If the Highbyte is set and X-Pos > $2a 
-                    //    we are at the right border and can't go further, so rts
-                    lda PointerHighByteFlag       // is the highbyte
-                    cmp #$00                      // not set go to check_x...
-                    beq check_x
-                    jmp check_max
-        check_x:    lda $d00e                     // and is the x-pos #$ff
-                    cmp #$ff
-                    bne check_max
-                    //inc PointerIsAt
-                    lda #$01                      // then set the highbyte
-                    sta PointerHighByteFlag
-                    lda $d010                     // set the highbyte for all three sprites
-                    ora #%11100000                // in its
-                    sta $d010                     // vic register
-                    lda #$00                      // and set the x-pos to $00
-                    sta $d00e
-                    sta $d00c
-                    sta $d00a
-                    rts
+                        // If the Highbyte is set and X-Pos > $2a 
+                        //    we are at the right border and can't go further, so rts
+                        lda PointerHighByteFlag       // is the highbyte
+                        cmp #$00                      // not set go to check_x...
+                        beq check_x
+                        jmp check_max
+                check_x:    lda $d00e                     // and is the x-pos #$ff
+                        cmp #$ff
+                        bne check_max
+                        //inc PointerIsAt
+                        lda #$01                      // then set the highbyte
+                        sta PointerHighByteFlag
+                        lda $d010                     // set the highbyte for all three sprites
+                        ora #%11100000                // in its
+                        sta $d010                     // vic register
+                        lda #$00                      // and set the x-pos to $00
+                        sta $d00e
+                        sta $d00c
+                        sta $d00a
+                        rts
 
-         check_max: lda PointerHighByteFlag       // again: check the highbyte
-                    cmp #$01                      // if it is
-                    bne do                        // not set the pointer can move ...
-                    lda $d00e                     // otherwise we check
-                    cmp #$2a                      // if the pointer arrived the max x-pos
-                    bcc do
-                    rts 
+                check_max: lda PointerHighByteFlag       // again: check the highbyte
+                        cmp #$01                      // if it is
+                        bne do                        // not set the pointer can move ...
+                        lda $d00e                     // otherwise we check
+                        cmp #$2a                      // if the pointer arrived the max x-pos
+                        bcc do
+                        rts 
 
-        do:         inc $d00e
-                    inc $d00c
-                    inc $d00a
-                    rts
+                do:         inc $d00e
+                        inc $d00c
+                        inc $d00a
+                        rts
     }
 
     MovePointerDown: {
-                    lda $d00f
-                    cmp #$c9
-                    bcc do
-                    rts        
-        do:         inc $d00f
-                    inc $d00d
-                    inc $d00b
-                    rts
+                        lda $d00f
+                        cmp #$c9
+                        bcc do
+                        rts        
+                do:         inc $d00f
+                        inc $d00d
+                        inc $d00b
+                        rts
 
     }
 
     MovePointerUp: {
-                    lda $d00f
-                    cmp #$39
-                    bcs do
-                    rts
-        do:         dec $d00f
-                    dec $d00d
-                    dec $d00b
-                    rts
+                        lda $d00f
+                        cmp #$39
+                        bcs do
+                        rts
+                do:         dec $d00f
+                        dec $d00d
+                        dec $d00b
+                        rts
 
     }
 
     CalculatePointerIsAtToSpriteCoordinates: {
-                    // Result in X and Y registers
-                    // 
-                    // formula:
-                    //
-                    // row Y = PointerIsAt / $0c         -> $0c = tiles in one row of the play field matrix
-                    // row X = PointerIsAt - ( Y * $0c )  // TODO CHANGE TO MODULO !!!!
-                    //
-                    // x = X * $18 + $18                 -> $18 because a block object has a 18 pix width, another $18 because correlation of visible area (starts at x=$18)
-                    // y = Y * $10 + $32
+                        // Result in X and Y registers
+                        // 
+                        // formula:
+                        //
+                        // row Y = PointerIsAt / $0c         -> $0c = tiles in one row of the play field matrix
+                        // row X = PointerIsAt - ( Y * $0c )  // TODO CHANGE TO MODULO !!!!
+                        //
+                        // x = X * $18 + $18                 -> $18 because a block object has a 18 pix width, another $18 because correlation of visible area (starts at x=$18)
+                        // y = Y * $10 + $32
 
-                    // row Y = PointerIsAt / $0c         -> $0c = tiles in one row of the play field matrix
-                    
-                    lda PointerIsAt
-                    sta ZP.Num1Lo
-                    lda #$00
-                    sta ZP.Num1Hi
-                    lda #$0c
-                    sta ZP.Num2Lo
-                    lda #$00
-                    sta ZP.Num2Hi
-                    jsr Divide
+                        // row Y = PointerIsAt / $0c         -> $0c = tiles in one row of the play field matrix
+                        
+                        lda PointerIsAt
+                        sta ZP.Num1Lo
+                        lda #$00
+                        sta ZP.Num1Hi
+                        lda #$0c
+                        sta ZP.Num2Lo
+                        lda #$00
+                        sta ZP.Num2Hi
+                        jsr Divide
 
-                    lda ZP.ResultLo
-                    sta ZP.Temp1Lo
-                    lda ZP.ResultHi
-                    sta ZP.Temp1Hi
-                    
-                    // row X = PointerIsAt - ( Y * $0c )
-                    lda ZP.Temp1Lo
-                    sta ZP.Num1
-                    lda #$0c
-                    sta ZP.Num2
-                    jsr Multiply
+                        lda ZP.ResultLo
+                        sta ZP.Temp1Lo
+                        lda ZP.ResultHi
+                        sta ZP.Temp1Hi
+                        
+                        // row X = PointerIsAt - ( Y * $0c )
+                        lda ZP.Temp1Lo
+                        sta ZP.Num1
+                        lda #$0c
+                        sta ZP.Num2
+                        jsr Multiply
 
-                    ldx PointerIsAt
-                    stx ZP.Num1Lo
-                    ldx #$00
-                    stx ZP.Num1Hi
-                    sta ZP.Num2Lo
-                    lda #$00
-                    sta ZP.Num2Hi
-                    jsr Subtract
+                        ldx PointerIsAt
+                        stx ZP.Num1Lo
+                        ldx #$00
+                        stx ZP.Num1Hi
+                        sta ZP.Num2Lo
+                        lda #$00
+                        sta ZP.Num2Hi
+                        jsr Subtract
 
-                    lda ZP.ResultLo
-                    sta ZP.Temp2Lo
-                    lda ZP.ResultHi
-                    sta ZP.Temp2Hi
+                        lda ZP.ResultLo
+                        sta ZP.Temp2Lo
+                        lda ZP.ResultHi
+                        sta ZP.Temp2Hi
                 
-                     // x = X * $18 + $18
-                    lda ZP.Temp2Lo
-                    sta ZP.Num1
-                    lda #$18
-                    sta ZP.Num2
-                    jsr Multiply
+                        // x = X * $18 + $18
+                        lda ZP.Temp2Lo
+                        sta ZP.Num1
+                        lda #$18
+                        sta ZP.Num2
+                        jsr Multiply
 
 
-                    sta ZP.Num1Lo
-                    lda #$00
-                    sta ZP.Num1Hi
-                    lda #$18
-                    sta ZP.Num2Lo
-                    lda #$00
-                    sta ZP.Num2Hi
-                    jsr Add
+                        sta ZP.Num1Lo
+                        lda #$00
+                        sta ZP.Num1Hi
+                        lda #$18
+                        sta ZP.Num2Lo
+                        lda #$00
+                        sta ZP.Num2Hi
+                        jsr Add
 
 
-                    ldx ZP.ResultLo
+                        ldx ZP.ResultLo
 
-                    // y = Y * $10 + $32
-                    lda ZP.Temp1Lo
-                    sta ZP.Num1
-                    lda #$10
-                    sta ZP.Num2
-                    jsr Multiply
+                        // y = Y * $10 + $32
+                        lda ZP.Temp1Lo
+                        sta ZP.Num1
+                        lda #$10
+                        sta ZP.Num2
+                        jsr Multiply
 
-                    sta ZP.Num1Lo
-                    lda #$00
-                    sta ZP.Num1Hi
-                    lda #$32
-                    sta ZP.Num2Lo
-                    lda #$00
-                    sta ZP.Num2Hi
-                    jsr Add
+                        sta ZP.Num1Lo
+                        lda #$00
+                        sta ZP.Num1Hi
+                        lda #$32
+                        sta ZP.Num2Lo
+                        lda #$00
+                        sta ZP.Num2Hi
+                        jsr Add
 
 
-                    ldy ZP.ResultLo
+                        ldy ZP.ResultLo
 
-                    rts
+                        rts
 
+        }
+
+        RefreshPointerIsAt: {
+
+                        //  My formula to calculate the position in the matrix from the sprite coordinates
+                        //  
+                        //  x = ( SPRITE_X - $18 ) / $18            - $18 because we need to base our calc on x coord=0, divide by $18 because one block is $18/24 pixels wide
+                        //  y = ( SPRITE_Y - $32 ) / $10            - $32 because we need to base out calc on y coord=0, divide by $18 because on block is $10/16 pixel high
+                        //  PointerIsAt = y * $0c + x                 $0c because one row in the playfield has $0b fields or blockz + $01 to get to the next row = $0c
+                        // 
+                        
+                        // x calculation
+                        lda $d00e
+                        sta ZP.Num1Lo
+                        lda PointerHighByteFlag
+                        sta ZP.Num1Hi
+                        lda #$18
+                        sta ZP.Num2Lo
+                        lda #$00
+                        sta ZP.Num2Hi
+                        jsr Subtract
+
+                        
+                        lda ZP.ResultLo
+                        sta ZP.Num1Lo
+                        lda ZP.ResultHi
+                        sta ZP.Num1Hi
+                        lda #$18
+                        sta ZP.Num2Lo
+                        lda #$00
+                        sta ZP.Num2Hi
+                        jsr Divide
+
+                        lda ZP.ResultLo
+                        sta ZP.Temp1Lo    
+                        lda ZP.ResultHi
+                        sta ZP.Temp1Hi
+
+
+                        //y calculation
+                        lda $d00f
+                        sta ZP.Num1Lo
+                        lda #$00
+                        sta ZP.Num1Hi
+                        lda #$32
+                        sta ZP.Num2Lo
+                        lda #$00
+                        sta ZP.Num2Hi
+                        jsr Subtract
+
+                        lda ZP.ResultLo
+                        sta ZP.Num1Lo
+                        lda ZP.ResultHi
+                        sta ZP.Num1Hi
+                        lda #$10
+                        sta ZP.Num2Lo
+                        lda #$00
+                        sta ZP.Num2Hi
+                        jsr Divide
+
+                        lda ZP.ResultLo
+                        sta ZP.Temp2Lo    
+                        lda ZP.ResultHi
+                        sta ZP.Temp2Hi
+
+                        // calculate row
+                        lda ZP.Temp2Lo
+                        sta ZP.Num1
+                        lda #$0c
+                        sta ZP.Num2
+                        jsr Multiply
+
+                        sta ZP.Num1Lo
+                        lda #$00
+                        sta ZP.Num1Hi
+
+                        lda ZP.Temp1Lo
+                        sta ZP.Num2Lo
+                        lda #$00
+                        sta ZP.Num2Hi
+                        jsr Add
+
+                        lda ZP.ResultLo
+                        sta PointerIsAt
+                        rts
     }
 
-    RefreshPointerIsAt: {
+    MoveBlockSprite: {
 
-                    //  My formula to calculate the position in the matrix from the sprite coordinates
-                    //  
-                    //  x = ( SPRITE_X - $18 ) / $18            - $18 because we need to base our calc on x coord=0, divide by $18 because one block is $18/24 pixels wide
-                    //  y = ( SPRITE_Y - $32 ) / $10            - $32 because we need to base out calc on y coord=0, divide by $18 because on block is $10/16 pixel high
-                    //  PointerIsAt = y * $0c + x                 $0c because one row in the playfield has $0b fields or blockz + $01 to get to the next row = $0c
-                    // 
-                    
-                    // x calculation
-                    lda $d00e
-                    sta ZP.Num1Lo
-                    lda PointerHighByteFlag
-                    sta ZP.Num1Hi
-                    lda #$18
-                    sta ZP.Num2Lo
-                    lda #$00
-                    sta ZP.Num2Hi
-                    jsr Subtract
+                        // Remember Start Positition of the Block Sprite
+                        ldx $d009
+                        stx BlockMoveXStart
+                        ldy $d008
+                        stx BlockMoveYStart
 
-                    
-                    lda ZP.ResultLo
-                    sta ZP.Num1Lo
-                    lda ZP.ResultHi
-                    sta ZP.Num1Hi
-                    lda #$18
-                    sta ZP.Num2Lo
-                    lda #$00
-                    sta ZP.Num2Hi
-                    jsr Divide
+                        //  Calculate End Position of the Block Sprite
+                        lda #$00
+                        sta BlockMoveXEnd
+                        sta BlockMoveYEnd
 
-                    lda ZP.ResultLo
-                    sta ZP.Temp1Lo    
-                    lda ZP.ResultHi
-                    sta ZP.Temp1Hi
+                        
 
 
-                    //y calculation
-                    lda $d00f
-                    sta ZP.Num1Lo
-                    lda #$00
-                    sta ZP.Num1Hi
-                    lda #$32
-                    sta ZP.Num2Lo
-                    lda #$00
-                    sta ZP.Num2Hi
-                    jsr Subtract
 
-                    lda ZP.ResultLo
-                    sta ZP.Num1Lo
-                    lda ZP.ResultHi
-                    sta ZP.Num1Hi
-                    lda #$10
-                    sta ZP.Num2Lo
-                    lda #$00
-                    sta ZP.Num2Hi
-                    jsr Divide
-
-                    lda ZP.ResultLo
-                    sta ZP.Temp2Lo    
-                    lda ZP.ResultHi
-                    sta ZP.Temp2Hi
-
-                    // calculate row
-                    lda ZP.Temp2Lo
-                    sta ZP.Num1
-                    lda #$0c
-                    sta ZP.Num2
-                    jsr Multiply
-
-                    sta ZP.Num1Lo
-                    lda #$00
-                    sta ZP.Num1Hi
-
-                    lda ZP.Temp1Lo
-                    sta ZP.Num2Lo
-                    lda #$00
-                    sta ZP.Num2Hi
-                    jsr Add
-
-                    lda ZP.ResultLo
-                    sta PointerIsAt
+                    ldx $d009
+                    txa
+                    sbc #$30
+                    sta $d009
+                    sta $d007
+                    sta $d005
+                    sta $d003
                     rts
+
+
     }
 
 
